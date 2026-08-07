@@ -1,0 +1,5 @@
+customer_id,name,email,city,signup_date
+101,John Smith,john@gmail.com,Hamburg,2026-01-10
+102,Anna Muller,anna@gmail.com,Berlin,2026-01-12
+103,Peter Brown,peter@gmail.com,Munich,2026-02-05
+104,Sarah Wilson,sarah@gmail.com,Frankfurt,2026-02-20
