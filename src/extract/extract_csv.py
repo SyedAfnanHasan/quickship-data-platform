@@ -1,17 +1,64 @@
 import pandas as pd
-from pathlib import Path
 
-# Path to the raw data folder
-RAW_DATA_PATH = Path("data/raw")
+from src.config.config import RAW_DATA_PATH
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+def extract_customers() -> pd.DataFrame:
+    """
+    Extract customer data from CSV file.
+    """
+    file_path = RAW_DATA_PATH / "customers.csv"
+
+    logger.info("Starting customer extraction")
+
+    try:
+        customers = pd.read_csv(file_path)
+
+    except FileNotFoundError:
+        logger.error("Customer file not found: %s", file_path)
+        raise
+
+    logger.info("Customers extracted: %d rows", len(customers))
+
+    return customers
+
+def extract_orders() -> pd.DataFrame:
+    """
+    Extract order data from CSV file.
+    """
+    file_path = RAW_DATA_PATH / "orders.csv"
+
+    logger.info("Starting order extraction")
+
+    try:
+        orders = pd.read_csv(file_path)
+
+    except FileNotFoundError:
+        logger.error("Orders file not found: %s", file_path)
+        raise
+
+    logger.info("Orders extracted: %d rows", len(orders))
+
+    return orders
 
 
-def extract_customers():
-    return pd.read_csv(RAW_DATA_PATH / "customers.csv")
+def extract_deliveries() -> pd.DataFrame:
+    """
+    Extract delivery data from CSV file.
+    """
+    file_path = RAW_DATA_PATH / "deliveries.csv"
 
+    logger.info("Starting delivery extraction")
 
-def extract_orders():
-    return pd.read_csv(RAW_DATA_PATH / "orders.csv")
+    try:
+        deliveries = pd.read_csv(file_path)
 
+    except FileNotFoundError:
+        logger.error("Delivery file not found: %s", file_path)
+        raise
 
-def extract_deliveries():
-    return pd.read_csv(RAW_DATA_PATH / "deliveries.csv")
+    logger.info("Deliveries extracted: %d rows", len(deliveries))
+
+    return deliveries

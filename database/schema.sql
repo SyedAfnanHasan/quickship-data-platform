@@ -1,3 +1,11 @@
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id INTEGER PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(150),
+    city VARCHAR(50),
+    signup_date DATE
+);
+
 CREATE TABLE IF NOT EXISTS orders (
     order_id INTEGER PRIMARY KEY,
     customer_id INTEGER,
