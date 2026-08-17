@@ -26,4 +26,14 @@ CREATE TABLE IF NOT EXISTS deliveries (
 
     FOREIGN KEY (order_id)
     REFERENCES orders(order_id)
+
+    FOREIGN KEY (driver_id)
+    REFERENCES drivers(driver_id)
+);
+
+CREATE TABLE IF NOT EXISTS drivers (
+    driver_id INTEGER PRIMARY KEY,
+    name VARCHAR(100),
+    city VARCHAR(50),
+    hire_date DATE
 );

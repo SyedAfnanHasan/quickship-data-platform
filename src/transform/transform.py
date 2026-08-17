@@ -70,3 +70,16 @@ def transform_deliveries(
     logger.info("Delivery transformation completed")
 
     return deliveries
+
+def transform_drivers(drivers: pd.DataFrame) -> pd.DataFrame:
+    """
+    Transform driver data.
+    """
+    drivers = drivers.copy()
+
+    drivers["driver_id"] = drivers["driver_id"].astype(int)
+    drivers["name"] = drivers["name"].astype(str)
+    drivers["city"] = drivers["city"].astype(str)
+    drivers["hire_date"] = pd.to_datetime(drivers["hire_date"])
+
+    return drivers

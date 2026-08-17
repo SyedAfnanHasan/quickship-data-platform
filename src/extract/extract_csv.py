@@ -62,3 +62,22 @@ def extract_deliveries() -> pd.DataFrame:
     logger.info("Deliveries extracted: %d rows", len(deliveries))
 
     return deliveries
+
+def extract_drivers() -> pd.DataFrame:
+    """
+    Extract driver data from CSV file.
+    """
+    file_path = RAW_DATA_PATH / "drivers.csv"
+
+    logger.info("Starting driver extraction")
+
+    try:
+        drivers = pd.read_csv(file_path)
+
+    except FileNotFoundError:
+        logger.error("Driver file not found: %s", file_path)
+        raise
+
+    logger.info("Drivers extracted: %d rows", len(drivers))
+
+    return drivers

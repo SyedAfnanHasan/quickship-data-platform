@@ -3,77 +3,55 @@ from src.validation.validation import (
     validate_customers,
     validate_orders,
     validate_deliveries,
+    validate_drivers,
 )
 
 from src.transform.transform import (
     transform_customers,
     transform_orders,
     transform_deliveries,
+    transform_drivers,
 )
 
 from src.extract.extract_csv import (
     extract_customers,
     extract_orders,
     extract_deliveries,
+    extract_drivers,
 )
 
 from src.load.load_postgres import (
     load_customers,
     load_orders,
-    is_table_empty,
-    load_deliveries
+    load_deliveries,
+    load_drivers,
 )
 
 def main():
     customers = extract_customers()
     validate_customers(customers)
-
     customers = transform_customers(customers)
-    print("\nTransformed customers:")
 
-    if is_table_empty("customers"):
-        load_customers(customers)
-
-    else:
-        print("Customers table is not empty. Skipping customer load.")
-
-    print(customers.dtypes)
+    load_customers(customers)
 
     orders = extract_orders()
     validate_orders(orders, customers)
-
     orders = transform_orders(orders)
-    print("\nTransformed orders:")
 
-    if is_table_empty("orders"):
-        load_orders(orders)
-    else:
-        print("Orders table is not empty. Skipping order load.")
-
-    print(orders.dtypes)
+    load_orders(orders)
 
     deliveries = extract_deliveries()
     validate_deliveries(deliveries, orders)
-
     deliveries = transform_deliveries(deliveries)
-    print("\nTransformed deliveries:")
 
-    if is_table_empty("deliveries"):
-        load_deliveries(deliveries)
-    else:
-        print("Deliveries table is not empty. Skipping delivery load.")
+    load_deliveries(deliveries)
 
-    print(deliveries.dtypes)
 
-    print("Customers")
-    print(customers.head())
+    drivers = extract_drivers()
+    validate_drivers(drivers)
+    drivers = transform_drivers(drivers)
 
-    print("\nOrders")
-    print(orders.head())
-
-    print("\nDeliveries")
-    print(deliveries.head())
-
+    load_drivers(drivers)
 
 if __name__ == "__main__":
     main()

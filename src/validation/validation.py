@@ -135,3 +135,27 @@ def validate_deliveries(
     validate_delivery_ids_not_null(deliveries)
     validate_delivery_order_ids(deliveries, orders)
     validate_delivery_times(deliveries)
+
+def validate_drivers(drivers: pd.DataFrame) -> None:
+    """
+    Validate driver data.
+    """
+    required_columns = {
+        "driver_id",
+        "name",
+        "city",
+        "hire_date",
+    }
+
+    missing_columns = required_columns - set(drivers.columns)
+
+    if missing_columns:
+        raise ValueError(
+            f"Drivers data is missing columns: {missing_columns}"
+        )
+
+    if drivers["driver_id"].isnull().any():
+        raise ValueError("Driver ID cannot contain null values.")
+
+    if drivers["driver_id"].duplicated().any():
+        raise ValueError("Driver ID contains duplicate values.")
