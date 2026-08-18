@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData, Table, or_
+from sqlalchemy.dialects.postgresql import insert
 import pandas as pd
 
 from src.config.config import (
@@ -30,111 +31,121 @@ def load_dataframe(
         index=False
     )
 
+def upsert_dataframe(
+    df: pd.DataFrame,
+    table_name: str,
+    primary_key: str
+) -> None:
+    """
+    Insert new records or update existing records
+    based on the primary key.
+    """
+    metadata = MetaData()
+
+    table = Table(
+        table_name,
+        metadata,
+        autoload_with=engine
+    )
+
+    records = df.to_dict(orient="records")
+
+    if not records:
+        return
+
+    stmt = insert(table).values(records)
+
+    update_columns = {
+        column.name: stmt.excluded[column.name]
+        for column in table.columns
+        if column.name != primary_key
+    }
+
+    # stmt = stmt.on_conflict_do_update(
+    #     index_elements=[primary_key],
+    #     set_=update_columns
+    # )
+
+    changed_columns = [
+        table.c[column.name].is_distinct_from(
+            stmt.excluded[column.name]
+        )
+        for column in table.columns
+        if column.name != primary_key
+    ]
+
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[primary_key],
+        set_=update_columns,
+        where=or_(*changed_columns)
+    )
+
+    with engine.begin() as connection:
+        connection.execute(stmt)
+
 def load_customers(customers: pd.DataFrame) -> None:
     """
-    Incrementally load customer data into the customers table.
+    Upsert customer data into the customers table.
     """
-    existing_ids = get_existing_ids(
+    if customers.empty:
+        print("No customers to load.")
+        return
+
+    upsert_dataframe(
+        customers,
         "customers",
         "customer_id"
     )
 
-    new_customers = customers[
-        ~customers["customer_id"].isin(existing_ids)
-    ]
-
-    if new_customers.empty:
-        print("No new customers to load.")
-        return
-
-    load_dataframe(new_customers, "customers")
-
-    print(f"Loaded {len(new_customers)} new customers.")
+    print(f"Upserted {len(customers)} customers.")
 
 def load_orders(orders: pd.DataFrame) -> None:
     """
-    Incrementally load order data into the orders table.
+    Upsert order data into the orders table.
     """
-    existing_ids = get_existing_ids(
+    if orders.empty:
+        print("No orders to load.")
+        return
+
+    upsert_dataframe(
+        orders,
         "orders",
         "order_id"
     )
 
-    new_orders = orders[
-        ~orders["order_id"].isin(existing_ids)
-    ]
-
-    if new_orders.empty:
-        print("No new orders to load.")
-        return
-
-    load_dataframe(new_orders, "orders")
-
-    print(f"Loaded {len(new_orders)} new orders.")
+    print(f"Upserted {len(orders)} orders.")
 
 def load_deliveries(deliveries: pd.DataFrame) -> None:
     """
-    Incrementally load delivery data into the deliveries table.
+    Upsert delivery data into the deliveries table.
     """
-    existing_ids = get_existing_ids(
+    if deliveries.empty:
+        print("No deliveries to load.")
+        return
+
+    upsert_dataframe(
+        deliveries,
         "deliveries",
         "delivery_id"
     )
 
-    new_deliveries = deliveries[
-        ~deliveries["delivery_id"].isin(existing_ids)
-    ]
-
-    if new_deliveries.empty:
-        print("No new deliveries to load.")
-        return
-
-    load_dataframe(new_deliveries, "deliveries")
-
-    print(f"Loaded {len(new_deliveries)} new deliveries.")
-
-def is_table_empty(table_name: str) -> bool:
-    query = f"SELECT EXISTS (SELECT 1 FROM {table_name})"
-
-    with engine.connect() as connection:
-        result = connection.exec_driver_sql(query)
-
-    return not result.scalar()
-
-def get_existing_ids(
-    table_name: str,
-    id_column: str
-) -> set:
-    """
-    Get existing primary key values from a PostgreSQL table.
-    """
-    query = f"SELECT {id_column} FROM {table_name}"
-
-    with engine.connect() as connection:
-        result = connection.exec_driver_sql(query)
-
-    return {row[0] for row in result}
+    print(f"Upserted {len(deliveries)} deliveries.")
 
 def load_drivers(drivers: pd.DataFrame) -> None:
     """
-    Incrementally load driver data into the drivers table.
+    Upsert driver data into the drivers table.
     """
-    existing_ids = get_existing_ids(
+    if drivers.empty:
+        print("No drivers to load.")
+        return
+
+    upsert_dataframe(
+        drivers,
         "drivers",
         "driver_id"
     )
 
-    new_drivers = drivers[
-        ~drivers["driver_id"].isin(existing_ids)
-    ]
-
-    if new_drivers.empty:
-        print("No new drivers to load.")
-        return
-
-    load_dataframe(new_drivers, "drivers")
-
-    print(f"Loaded {len(new_drivers)} new drivers.")
+    print(f"Upserted {len(drivers)} drivers.")
 
 if __name__ == "__main__":
     with engine.connect() as connection:
